@@ -59,8 +59,8 @@ def prepareData():
     print("Counted words:")
     print(vocab.vocab_size)
     for pair in pairs_raw:
-        up_tokens = idxFromSentence(vocab, pair[0])
-        down_tokens = idxFromSentence(vocab, pair[1])
+        up_tokens = tokenizer(vocab, pair[0])
+        down_tokens = tokenizer(vocab, pair[1])
         pairs.append([up_tokens, down_tokens])
     data = {"vocab": vocab,
             "pairs_raw": pairs_raw,
