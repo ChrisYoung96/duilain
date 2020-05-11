@@ -68,7 +68,7 @@ def load_flile(file_path, read_way='r', encoding=''):
 # 将句子离散化，即将句子中的字（词）转换为字典中的下标
 def tokenizer(vocab, sentence):
     idxs = []
-    for word in sentence:
+    for word in sentence.split(' '):
         if word not in vocab.word2idx:
             idxs.append(vocab.word2idx['UNK'])
         else:

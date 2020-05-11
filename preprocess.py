@@ -41,26 +41,28 @@ def read_data():
     lines = open(config.data_path, encoding='utf-8').read().strip().split('\n')
     for l in lines:
         temp_l = l.split(' ')
-        pair = [normalizeCNString(temp_l[0]), normalizeCNString(temp_l[1])]
+        pair = [normalizeCNString(temp_l[0]), normalizeCNString(temp_l[1])]  # 去掉标点符号
         pairs.append(pair)
         vocab = Vocab()
     return vocab, pairs
 
 
+# 预处理数据
 def prepareData():
     pairs = []
     vocab, pairs_raw = read_data()
     print("Read %s sentencce parirs" % len(pairs_raw))
     print("Trimmed to %s sectence pairs" % len(pairs_raw))
     print("Counting words.....")
+    # 创建字典
     for pair in pairs_raw:
         vocab.build_vocab(pair[0])
         vocab.build_vocab(pair[1])
     print("Counted words:")
     print(vocab.vocab_size)
     for pair in pairs_raw:
-        up_tokens = tokenizer(vocab, pair[0])
-        down_tokens = tokenizer(vocab, pair[1])
+        up_tokens = tokenizer(vocab, pair[0])  # 上联tokens
+        down_tokens = tokenizer(vocab, pair[1])  # 下联tokens
         pairs.append([up_tokens, down_tokens])
     data = {"vocab": vocab,
             "pairs_raw": pairs_raw,
