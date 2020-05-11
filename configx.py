@@ -18,15 +18,21 @@ loss_img_path = "./loss_img/"
 attn_img_path = "./attn_img/"
 
 # 配置相关
-input_name = "en"
-target_name = "cn"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-v_ratio=0.2
-t_ratio=0.2
+
+# 数据集相关
+v_ratio = 0.2
+t_ratio = 0.2
+
+# 模型相关
+max_len = 20
+hidden_dim = 256
+embedding_dim = 256
+dropout_p = 0.1
 
 # 训练相关
-hidden_size = 256
 epoch = 20
 learning_rate = 0.001
 batch_size = 1
-max_len = 20
+print_every = 1000
+plot_every = 500

@@ -13,6 +13,7 @@ from dataset import *
 from model import *
 from plot import *
 from preprocess import *
+import configx as cfg
 
 
 # input_tensor(B,L) target_tensor(B,L)
@@ -111,19 +112,16 @@ if __name__ == "__main__":
     opt = parser.parse_args()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     os.environ["CUDA_VISIBLE_DEVICES"] = opt.gpu
-    hidden_dim = 256
-    embedding_dim = 256
-    epoch = 20
-    learning_rate = 0.001
-    batch_size = 1
-    duilian = DuiLian()
+    duilian = DuiLian(max_len=cfg.max_len, v_ratio=cfg.v_ratio, t_ratio=cfg.t_ratio)
     train_set = duilian.train
     valid_set = duilian.valid
     test_set = duilian.test
-    encoder = Encoder(duilian.get_vocab_size(), embedding_dim, hidden_dim).to(device)
-    attn_decoder = AttnDecoderRNN("dot", embedding_dim, hidden_dim, duilian.get_vocab_size(), dropout_p=0.1).to(
+    encoder = Encoder(duilian.get_vocab_size(), cfg.embedding_dim, cfg.hidden_dim).to(device)
+    attn_decoder = AttnDecoderRNN("dot", cfg.embedding_dim, cfg.hidden_dim, duilian.get_vocab_size(),
+                                  dropout_p=cfg.dropout_p).to(
         device)
     seq2seq = Seq2Seq(encoder, attn_decoder, device).to(device)
 
-    trainIters(encoder, attn_decoder, seq2seq, train_set, valid_set, epoch, batch_size, print_every=5000,
-               lr=learning_rate)
+    trainIters(encoder, attn_decoder, seq2seq, train_set, valid_set, cfg.epoch, cfg.batch_size,
+               print_every=cfg.print_every, plot_every=cfg.plot_every,
+               lr=cfg.learning_rate)
