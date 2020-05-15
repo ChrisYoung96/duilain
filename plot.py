@@ -39,7 +39,7 @@ def show_attention(input_sentence, output_words, attentions):
     fig.colorbar(cax)
 
     # Set up axes
-    ax.set_xticklabels([''] + input_sentence.split(' ') + ['EOS'], rotation=90)
+    ax.set_xticklabels([''] + input_sentence + ['EOS'], rotation=90)
     ax.set_yticklabels([''] + output_words)
 
     # Show label at every tick

@@ -14,6 +14,7 @@ from model import *
 from plot import *
 from preprocess import *
 import configx as cfg
+import blue
 
 
 # input_tensor(B,L) target_tensor(B,L)
@@ -99,9 +100,11 @@ def evaluate(valid_set, seq2seq, max_length=20, plot=False):
             word = duilian.get_vocab().idx2word[idx]
             pre_words.append(word)
         tar_words = [duilian.get_vocab().idx2word[idx] for idx in target_tensor.cpu().numpy()[0]]
-        score = corpus_bleu(tar_words, pre_words)
+        input_words=[duilian.get_vocab().idx2word[idx] for idx in input_tensor.cpu().numpy()[0]]
+        # score = corpus_bleu(tar_words, pre_words)
+        score, _, _, _, _, _ = blue.compute_bleu([b['y'].tolist()], [target_idxs], 2)
         if plot:
-            show_attention(b['xraw'][0], pre_words, attentions.view(-1, max_length))
+            show_attention(input_words, pre_words, attentions.view(-1, max_length))
         print("pre:", pre_words, "target", tar_words)
         print(score)
 
