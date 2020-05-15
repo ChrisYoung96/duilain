@@ -23,7 +23,7 @@ class Vocab():
         self.vocab_size = 4
 
     def build_vocab(self, sentence):
-        for word in sentence:
+        for word in sentence.split():
             if word not in self.word2idx:
                 self.word2idx[word] = self.vocab_size
                 self.word2count[word] = 1
@@ -35,7 +35,6 @@ class Vocab():
 
 def read_data():
     print("Reading lines...")
-
     pairs = []
     # 读数据并分行
     lines = open(config.data_path, encoding='utf-8').read().strip().split('\n')
