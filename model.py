@@ -67,7 +67,7 @@ class Attn(nn.Module):
         # 因此结构为（hidden_dim*2，hidden_dim)
         elif self.method == 'concat':
             self.attn = nn.Linear(self.hidden_dim * 2, self.hidden_dim)
-            self.v = nn.Parameter(torch.FloatTensor(1, hidden_dim))
+            self.v = nn.Parameter(torch.FloatTensor(hidden_dim))
 
     # 前向传播
     # dicoder_hidden(1,H),encoder_outputs(S,B,H)
@@ -97,7 +97,7 @@ class Attn(nn.Module):
         # 则先将Encoder和Decoder的hidden_state拼接在一起，然后过线性层乘以权重w
         # 再和参数v进行点乘
         elif self.method == 'concat':
-            attn_score = torch.tanh(self.attn(torch.cat((decoder_hidden, encoder_output), 1)))
+            attn_score = torch.tanh(self.attn(torch.cat((decoder_hidden, encoder_output), 0)))
             attn_score = self.v.dot(attn_score)
         return attn_score
 
@@ -162,7 +162,7 @@ class AttnDecoderRNN(nn.Module):
 
 # seq2seq模型
 class Seq2Seq(nn.Module):
-    def __init__(self, encoder, decoder, device, max_length=20, teacher_forcing=0.3):
+    def __init__(self, encoder, decoder, device, max_length=30, teacher_forcing=0.3):
         super(Seq2Seq, self).__init__()
         self.device = device
         self.max_length = max_length
@@ -218,7 +218,7 @@ class Seq2Seq(nn.Module):
         return outputs # (S,1,O)
 
     # 预测，根据输入语句，目标语句的第一个字符，以及最长序列长度预测翻译的语句
-    def predict(self, input_tensors, decoder_input, max_length=20):
+    def predict(self, input_tensors, decoder_input, max_length=30):
         encoder_hidden = self.encoder.initHidden()
         with torch.no_grad():
             encoder_outputs, encoder_hidden = self.encoder(input_tensors, encoder_hidden)

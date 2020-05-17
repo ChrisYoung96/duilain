@@ -37,12 +37,12 @@ def read_data():
     print("Reading lines...")
     pairs = []
     # 读数据并分行
-    lines = open(config.data_path, encoding='utf-8').read().strip().split('\n')
-    for l in lines:
-        temp_l = l.split(' ')
-        pair = [normalizeCNString(temp_l[0]), normalizeCNString(temp_l[1])]  # 去掉标点符号
+    lines_x = open(configx.data_path_x, encoding='utf-8').read().strip().split('\n')
+    lines_y = open(configx.data_path_y, encoding='utf-8').read().strip().split('\n')
+    for x, y in zip(lines_x, lines_y):
+        pair = [normalizeCNString(x), normalizeCNString(y)]
         pairs.append(pair)
-        vocab = Vocab()
+    vocab = Vocab()
     return vocab, pairs
 
 

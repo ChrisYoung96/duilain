@@ -18,20 +18,22 @@ from utils import *
 import  configx
 
 
-def showPlot(points):
+def showPlot(points,no):
     plt.figure()
+    plt.rcParams['figure.figsize'] = (8.0, 8.0)
     fig, ax = plt.subplots()
     loc = ticker.MultipleLocator(base=0.2)
     ax.yaxis.set_major_locator(loc)
     plt.plot(points)
     plt.show()
     check_save_path(configx.img_path + configx.loss_img_path)
-    plt.savefig(configx.img_path + configx.loss_img_path + "loss.png")
+    plt.savefig(configx.img_path + configx.loss_img_path + "loss"+str(no)+".png")
 
 
-def show_attention(input_sentence, output_words, attentions):
+def show_attention(input_sentence, output_words, attentions,no):
     # Set up figure with colorbar
     fig = plt.figure()
+    plt.rcParams['figure.figsize'] = (8.0, 8.0)
     plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
     plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
     ax = fig.add_subplot(111)
@@ -39,7 +41,7 @@ def show_attention(input_sentence, output_words, attentions):
     fig.colorbar(cax)
 
     # Set up axes
-    ax.set_xticklabels([''] + input_sentence + ['EOS'], rotation=90)
+    ax.set_xticklabels([''] + input_sentence, rotation=90)
     ax.set_yticklabels([''] + output_words)
 
     # Show label at every tick
@@ -48,5 +50,5 @@ def show_attention(input_sentence, output_words, attentions):
 
     plt.show()
     check_save_path(configx.img_path+configx.attn_img_path)
-    plt.savefig(configx.img_path+configx.attn_img_path+"attn.png")
+    plt.savefig(configx.img_path+configx.attn_img_path+"attn"+str(no)+".png")
     plt.close()

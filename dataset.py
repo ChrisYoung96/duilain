@@ -27,10 +27,14 @@ EOS_token = 1
 #       max_len:序列最大长度
 #       dtype:数据类型
 class Dataset(object):
-    def __init__(self, vocab, pairs, pairs_raw, ids, max_len=20, dtype=None):
+    def __init__(self, vocab, pairs, pairs_raw, ids, max_len=30, vocab_size=10000, dtype=None):
         self.__vocab = vocab
         self.__dtype = dtype
         self.__max_len = max_len
+        if self.__vocab.vocab_size < vocab_size:
+            self.__vocab_size = self.__vocab.vocab_size
+        else:
+            self.__vocab_size = vocab_size
         self.__ids = []
         self.__xs = []  # 输入数据集
         self.__ys = []  # 输出数据集
@@ -53,20 +57,30 @@ class Dataset(object):
             else:
                 self.__xls.append(len(x))
             # 将处理后的输入序列加入输入数据集
-            self.__xs.append(x)
+            self.__xs.append([])
+            for t in x:
+                if t >= self.__vocab_size:
+                    self.__xs[-1].append(self.__vocab.word2idx['UNK'])
+                else:
+                    self.__xs[-1].append(t)
 
             # 如果输入序列的长度小于最大长度，则做padding，用pad符补齐
-            while len(x) < self.__max_len:
+            while len(self.__xs[-1]) < self.__max_len:
                 self.__xs[-1].append(self.__vocab.word2idx["PAD"])
 
             if len(y) > self.__max_len:
                 self.__yls.append(self.__max_len)
                 y = y[:self.__max_len]
-                self.__yls.append(self.__max_len)
             else:
                 self.__yls.append(len(y))
-            self.__ys.append(y)
-            while len(y) < self.__max_len:
+            self.__ys.append([])
+            for t in y:
+                if t >= self.__vocab_size:
+                    self.__ys[-1].append(self.__vocab.word2idx['UNK'])
+                else:
+                    self.__ys[-1].append(t)
+
+            while len(self.__ys[-1]) < self.__max_len:
                 self.__ys[-1].append(self.__vocab.word2idx["PAD"])
             # 获取输入和输出的原文数据
             self.__xraws.append(xraw)
@@ -130,15 +144,12 @@ class Dataset(object):
 #       vocab_size:字典大小
 class DuiLian(object):
     def __init__(self, path=cfg.data_save_path + cfg.data_file_name, max_len=20, v_ratio=0.2, t_ratio=0.2, dtype='32',
-                 train_mode=True, vocab_size=5000):
+                 train_mode=True, vocab_size=10000):
         self.__dtypes = self.__dtype(dtype)
         self.__max_len = max_len
         data = load_flile(path, 'rb')  # 加载预处理后的数据
         self.__vocab = data['vocab']  # 获取输出语言的字典
-        # 重置字典大小
-        if vocab_size <= self.__vocab.vocab_size:
-            self.__vocab.word2idx = self.__vocab.word2idx[:vocab_size]
-            self.__vocab.vocab_size = vocab_size
+        self.__vocab_size = vocab_size
 
         # 如果为训练模式，准备训练集、测试集和验证集
         if train_mode:
@@ -165,6 +176,7 @@ class DuiLian(object):
                                  raws,
                                  ids,
                                  self.__max_len,
+                                 self.__vocab_size,
                                  self.__dtypes)
             # 生成验证集
             pairs, ids, raws = [], [], []
@@ -177,6 +189,7 @@ class DuiLian(object):
                                  raws,
                                  ids,
                                  self.__max_len,
+                                 self.__vocab_size,
                                  self.__dtypes)
             # 生成测试集
             pairs, ids, raws = [], [], []
@@ -189,6 +202,7 @@ class DuiLian(object):
                                 raws,
                                 ids,
                                 self.__max_len,
+                                self.__vocab_size,
                                 self.__dtypes)
 
     def __dtype(self, dtype='32'):
@@ -206,7 +220,7 @@ class DuiLian(object):
 
     # 获取输出语言的字典大小
     def get_vocab_size(self):
-        return self.__vocab.vocab_size
+        return self.__vocab_size
 
     # 使用字典根据id转换成word
     def idx2words(self, idxs):

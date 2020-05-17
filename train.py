@@ -54,6 +54,7 @@ def trainIters(encoder, decoder, seq2seq, train_set, valid_set, epoch, batch_siz
     while n_epoch != epoch:
         b = train_set.next_batch(batch_size)
         if b['new_epoch']:
+            showPlot(plot_losses,n_epoch)
             evaluate(valid_set, seq2seq)
             seq2seq.train()
             n_epoch += 1
@@ -66,7 +67,7 @@ def trainIters(encoder, decoder, seq2seq, train_set, valid_set, epoch, batch_siz
 
         loss = train(input_tensor, target_tensor, seq2seq, encoder_optimizer, decoder_optimizer,
                      criterion)
-        print(loss)
+        # print(loss)
         print_loss_total += loss
         plot_loss_total += loss
 
@@ -81,12 +82,13 @@ def trainIters(encoder, decoder, seq2seq, train_set, valid_set, epoch, batch_siz
             plot_loss_avg = plot_loss_total / plot_every
             plot_losses.append(plot_loss_avg)
             plot_loss_total = 0
-    showPlot(plot_losses)
     evaluate(test_set, seq2seq, plot=True)
 
 
 def evaluate(valid_set, seq2seq, max_length=20, plot=False):
     seq2seq.eval()
+    score = 0
+    total_num = valid_set.get_size()
     while True:
         b = valid_set.next_batch(1)
         if b['new_epoch']:
@@ -100,13 +102,12 @@ def evaluate(valid_set, seq2seq, max_length=20, plot=False):
             word = duilian.get_vocab().idx2word[idx]
             pre_words.append(word)
         tar_words = [duilian.get_vocab().idx2word[idx] for idx in target_tensor.cpu().numpy()[0]]
-        input_words=[duilian.get_vocab().idx2word[idx] for idx in input_tensor.cpu().numpy()[0]]
-        # score = corpus_bleu(tar_words, pre_words)
-        score, _, _, _, _, _ = blue.compute_bleu([b['y'].tolist()], [target_idxs], 2)
+        input_words = [duilian.get_vocab().idx2word[idx] for idx in input_tensor.cpu().numpy()[0]]
+        score_t, _, _, _, _, _ = blue.compute_bleu([b['y'].tolist()], [target_idxs], 2)
+        score += score_t
         if plot:
-            show_attention(input_words, pre_words, attentions.view(-1, max_length))
-        print("pre:", pre_words, "target", tar_words)
-        print(score)
+            show_attention(input_words[:b['xl'][0]], pre_words[:b['yl'][0]], attentions.view(-1, max_length),0)
+    print("AVG BLEU Score is : %.4f" % (score / total_num))
 
 
 if __name__ == "__main__":
@@ -115,15 +116,15 @@ if __name__ == "__main__":
     opt = parser.parse_args()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     os.environ["CUDA_VISIBLE_DEVICES"] = opt.gpu
-    duilian = DuiLian(max_len=cfg.max_len, v_ratio=cfg.v_ratio, t_ratio=cfg.t_ratio)
+    duilian = DuiLian(max_len=cfg.max_len, v_ratio=cfg.v_ratio, t_ratio=cfg.t_ratio, vocab_size=cfg.vocab_size)
     train_set = duilian.train
     valid_set = duilian.valid
     test_set = duilian.test
     encoder = Encoder(duilian.get_vocab_size(), cfg.embedding_dim, cfg.hidden_dim).to(device)
     attn_decoder = AttnDecoderRNN("dot", cfg.embedding_dim, cfg.hidden_dim, duilian.get_vocab_size(),
-                                  dropout_p=cfg.dropout_p).to(
+                                  dropout_p=cfg.dropout_p, max_length=cfg.max_len).to(
         device)
-    seq2seq = Seq2Seq(encoder, attn_decoder, device).to(device)
+    seq2seq = Seq2Seq(encoder, attn_decoder, device, max_length=cfg.max_len).to(device)
 
     trainIters(encoder, attn_decoder, seq2seq, train_set, valid_set, cfg.epoch, cfg.batch_size,
                print_every=cfg.print_every, plot_every=cfg.plot_every,
