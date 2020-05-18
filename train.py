@@ -36,7 +36,7 @@ def train(input_tensor, target_tensor, seq2seq, encorder_optimizer, decoder_opti
 
 
 def trainIters(encoder, decoder, seq2seq, train_set, valid_set, epoch, batch_size, print_every=1000, plot_every=50,
-               lr=0.01):
+               lr=0.001):
     seq2seq.train()
     start = time.time()
     plot_losses = []
@@ -85,7 +85,7 @@ def trainIters(encoder, decoder, seq2seq, train_set, valid_set, epoch, batch_siz
     evaluate(test_set, seq2seq, plot=True)
 
 
-def evaluate(valid_set, seq2seq, max_length=20, plot=False):
+def evaluate(valid_set, seq2seq, max_length=30, plot=False):
     seq2seq.eval()
     score = 0
     total_num = valid_set.get_size()
@@ -96,17 +96,17 @@ def evaluate(valid_set, seq2seq, max_length=20, plot=False):
         input_tensor, target_tensor = get_intput(b)
         decoder_input = Variable(torch.tensor([[SOS_token]])).to(device)
         target_idxs, attentions = seq2seq.predict(input_tensor, decoder_input, max_length)
-        pre_words = []
-        for i in range(len(target_idxs)):
-            idx = target_idxs[i]
-            word = duilian.get_vocab().idx2word[idx]
-            pre_words.append(word)
-        tar_words = [duilian.get_vocab().idx2word[idx] for idx in target_tensor.cpu().numpy()[0]]
-        input_words = [duilian.get_vocab().idx2word[idx] for idx in input_tensor.cpu().numpy()[0]]
+        # pre_words = []
+        # for i in range(len(target_idxs)):
+        #     idx = target_idxs[i]
+        #     word = duilian.get_vocab().idx2word[idx]
+        #     pre_words.append(word)
+        # tar_words = [duilian.get_vocab().idx2word[idx] for idx in target_tensor.cpu().numpy()[0]]
+        # input_words = [duilian.get_vocab().idx2word[idx] for idx in input_tensor.cpu().numpy()[0]]
         score_t, _, _, _, _, _ = blue.compute_bleu([b['y'].tolist()], [target_idxs], 2)
         score += score_t
-        if plot:
-            show_attention(input_words[:b['xl'][0]], pre_words[:b['yl'][0]], attentions.view(-1, max_length),0)
+        # if plot:
+        #     show_attention(input_words[:b['xl'][0]], pre_words[:b['yl'][0]], attentions.view(-1, max_length),0)
     print("AVG BLEU Score is : %.4f" % (score / total_num))
 
 

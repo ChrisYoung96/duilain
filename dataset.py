@@ -149,7 +149,7 @@ class DuiLian(object):
         self.__max_len = max_len
         data = load_flile(path, 'rb')  # 加载预处理后的数据
         self.__vocab = data['vocab']  # 获取输出语言的字典
-        self.__vocab_size = vocab_size
+        self.__vocab_size = self.__vocab.vocab_size
 
         # 如果为训练模式，准备训练集、测试集和验证集
         if train_mode:

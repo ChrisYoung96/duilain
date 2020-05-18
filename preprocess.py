@@ -39,7 +39,7 @@ def read_data():
     # 读数据并分行
     lines_x = open(configx.data_path_x, encoding='utf-8').read().strip().split('\n')
     lines_y = open(configx.data_path_y, encoding='utf-8').read().strip().split('\n')
-    for x, y in zip(lines_x, lines_y):
+    for x, y in zip(lines_x[:30000], lines_y[:30000]):
         pair = [normalizeCNString(x), normalizeCNString(y)]
         pairs.append(pair)
     vocab = Vocab()
